@@ -2,9 +2,8 @@
 #!desc=将指定的AI工具（OpenAI/Claude/Gemini等）及Google服务自动分流至“专享-US”节点
 
 [Policy]
-# 自动通过正则提取名称中包含“专享-US”的节点并整合为“美国节点”策略组
-美国节点 = select, policy-regex-filter=专享-US
-
+# url-test 模式：自动测试延迟，只使用通畅的专享-US节点
+美国节点 = url-test, policy-regex-filter=专享-US, url=http://www.gstatic.com/generate_204, interval=600
 [Rule]
 # AI 与 开发者平台 域名规则
 DOMAIN,ai.google.dev,美国节点
