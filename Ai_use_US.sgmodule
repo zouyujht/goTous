@@ -1,0 +1,38 @@
+#!name=AI与Google流量走美国节点
+#!desc=将指定的AI工具（OpenAI/Claude/Gemini等）及Google服务自动分流至“专享-US”节点
+
+[Policy]
+# 自动通过正则提取名称中包含“专享-US”的节点并整合为“美国节点”策略组
+美国节点 = select, policy-regex-filter=专享-US
+
+[Rule]
+# AI 与 开发者平台 域名规则
+DOMAIN,ai.google.dev,美国节点
+DOMAIN,aistudio.google.com,美国节点
+DOMAIN,anthropic.com,美国节点
+DOMAIN,antigravity-pa.googleapis.com,美国节点
+DOMAIN,antigravity-unleash.goog,美国节点
+DOMAIN,antigravity.google,美国节点
+DOMAIN,antigravity.googleapis.com,美国节点
+DOMAIN,bard.google.com,美国节点
+DOMAIN,chatgpt.com,美国节点
+DOMAIN,claude.ai,美国节点
+DOMAIN,claude.com,美国节点
+DOMAIN,claudeusercontent.com,美国节点
+DOMAIN,daily-cloudcode-pa.googleapis.com,美国节点
+DOMAIN,deepmind.com,美国节点
+DOMAIN,deepmind.google,美国节点
+DOMAIN,gemini.google.com,美国节点
+DOMAIN,generativeai.google,美国节点
+DOMAIN,generativelanguage.googleapis.com,美国节点
+DOMAIN,labs.google,美国节点
+DOMAIN,makersuite.google.com,美国节点
+DOMAIN,music.youtube.com,美国节点
+DOMAIN,notebooklm.google,美国节点
+DOMAIN,notebooklm.google.com,美国节点
+DOMAIN,oaistatic.com,美国节点
+DOMAIN,oaiusercontent.com,美国节点
+DOMAIN,openai.com,美国节点
+
+# 兼容 geosite:google（使用官方/主流在线规则集替换）
+RULE-SET,https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Google/Google.list,美国节点
