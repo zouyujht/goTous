@@ -3,7 +3,7 @@
 
 [Policy]
 # 测试能匹配的规则
-美国节点 = url-test, policy-regex-filter=-US|US-, url=http://www.gstatic.com/generate_204, interval=600, tolerance=50
+美国节点 = fallback, policy-regex-filter=US
 [Rule]
 # AI 与 开发者平台 域名规则
 DOMAIN,ai.google.dev,美国节点
