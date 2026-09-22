@@ -1,0 +1,67 @@
+name: Sync Shadowrocket AD rules
+
+on:
+  schedule:
+    # 北京时间 09:00 = UTC 01:00
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download latest upstream Shadowrocket AD rules
+        env:
+          RULES_URL: https://johnshall.github.io/Shadowrocket-ADBlock-Rules-Forever/sr_top500_banlist_ad.conf
+          OUTPUT_FILE: sr_top500_banlist_ad.conf
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --connect-timeout 15 "$RULES_URL" -o "$OUTPUT_FILE"
+
+      - name: Add Proxy Group before Rule section and remove duplicates
+        env:
+          OUTPUT_FILE: sr_top500_banlist_ad.conf
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          path = Path(os.environ["OUTPUT_FILE"])
+          text = path.read_text(encoding="utf-8-sig").replace("\r\n", "\n")
+
+          proxy_group = """[Proxy Group]
+          美国节点 = url-test,policy-select-name=地区随机 | 美国 US | SJC | 74.207.241.10:443,interval=600,tolerance=100,timeout=5,url=http://www.gstatic.com/generate_204,policy-regex-filter=^(?!.*(?:剩余|过期|到期|重置|[Rr]emaining|[Ee]xpir|[Rr]eset|[Vv][Ii][Ss][Aa]美国)).*(?:美国|\\b[Uu][Ss]\\b|🇺🇸|[Uu]nited [Ss]tates|\\b[Uu][Ss][Aa]\\b).*$
+
+          """
+
+          # Remove any existing Proxy Group block before Rule to avoid duplicates
+          text = re.sub(r"(?ms)^\[Proxy Group\]\n.*?(?=^\[Rule\]|\Z)", "", text)
+
+          marker = "[Rule]"
+          if marker not in text:
+              raise SystemExit(f"No '{marker}' section found in {path}")
+
+          updated = text.replace(marker, f"{proxy_group}{marker}", 1)
+          path.write_text(updated, encoding="utf-8", newline="\n")
+          PY
+
+      - name: Commit updated rule file
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- sr_top500_banlist_ad.conf; then
+            echo "No changes detected."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sr_top500_banlist_ad.conf
+          git commit -m "chore: sync Shadowrocket AD rules"
+          git push
