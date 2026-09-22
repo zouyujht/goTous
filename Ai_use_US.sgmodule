@@ -3,7 +3,7 @@
 
 [Policy]
 # 测试能匹配的规则
-美国节点 = fallback, policy-regex-filter=US
+美国节点 = fallback, policy-regex-filter=^(?!.*(?:剩余|过期|到期|重置|[Rr]emaining|[Ee]xpir|[Rr]eset|[Vv][Ii][Ss][Aa]美国)).*(?:美国|\b[Uu][Ss]\b|🇺🇸|[Uu]nited [Ss]tates|\b[Uu][Ss][Aa]\b).*$
 [Rule]
 # AI 与 开发者平台 域名规则
 DOMAIN,ai.google.dev,美国节点
