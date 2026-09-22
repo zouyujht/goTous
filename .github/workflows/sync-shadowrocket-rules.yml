@@ -2,7 +2,6 @@ name: Sync Shadowrocket AD rules
 
 on:
   schedule:
-    # 北京时间 09:00 = UTC 01:00
     - cron: "0 1 * * *"
   workflow_dispatch:
 
@@ -14,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download latest upstream Shadowrocket AD rules
         env:
@@ -28,9 +27,9 @@ jobs:
         env:
           OUTPUT_FILE: sr_top500_banlist_ad.conf
         run: |
+          set -euo pipefail
           python3 - <<'PY'
-          import os
-          import re
+          import os, re
           from pathlib import Path
 
           path = Path(os.environ["OUTPUT_FILE"])
@@ -41,7 +40,6 @@ jobs:
 
           """
 
-          # Remove any existing Proxy Group block before Rule to avoid duplicates
           text = re.sub(r"(?ms)^\[Proxy Group\]\n.*?(?=^\[Rule\]|\Z)", "", text)
 
           marker = "[Rule]"
@@ -55,13 +53,14 @@ jobs:
       - name: Commit updated rule file
         run: |
           set -euo pipefail
-          if git diff --quiet -- sr_top500_banlist_ad.conf; then
+          git add sr_top500_banlist_ad.conf
+
+          if git diff --cached --quiet -- sr_top500_banlist_ad.conf; then
             echo "No changes detected."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add sr_top500_banlist_ad.conf
           git commit -m "chore: sync Shadowrocket AD rules"
           git push
